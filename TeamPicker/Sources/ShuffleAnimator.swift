@@ -15,6 +15,7 @@ final class ShuffleAnimator<T> {
     func run(
         randomSnapshot: @escaping @MainActor () -> T,
         onTick: @escaping @MainActor (T) -> Void,
+        onProgress: (@MainActor (Double) -> Void)? = nil,
         finalResult: @escaping @MainActor () -> T,
         onComplete: @escaping @MainActor (T) -> Void
     ) -> Task<Void, Never> {
@@ -29,6 +30,7 @@ final class ShuffleAnimator<T> {
                 guard !Task.isCancelled else { return }
 
                 onTick(randomSnapshot())
+                onProgress?(Double(tick + 1) / Double(totalTicks))
             }
 
             guard !Task.isCancelled else { return }
