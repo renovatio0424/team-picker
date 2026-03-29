@@ -9,8 +9,7 @@ struct PickerView: View {
     @State private var isDone = false
     @State private var animationTask: Task<Void, Never>?
 
-    private let totalTicks = 30
-    private let baseInterval: TimeInterval = 0.05
+    private let animator = ShuffleAnimator<[[Participant]]>()
 
     private let teamColors: [Color] = [
         .blue, .orange, .green, .purple, .red, .teal, .pink, .indigo
@@ -110,26 +109,18 @@ struct PickerView: View {
         isDone = false
         displayTeams = model.randomSnapshot()
 
-        animationTask = Task {
-            for tick in 0..<totalTicks {
-                let progress = Double(tick) / Double(totalTicks)
-                let easeOut = 1 - pow(1 - progress, 3) // cubic ease-out
-                let interval = baseInterval + easeOut * 0.35
-                let nanoseconds = UInt64(interval * 1_000_000_000)
-
-                try? await Task.sleep(nanoseconds: nanoseconds)
-                guard !Task.isCancelled else { return }
-
-                displayTeams = model.randomSnapshot()
-            }
-
-            // Final result
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                displayTeams = model.pickTeams()
+        animationTask = animator.run(
+            randomSnapshot: { model.randomSnapshot() },
+            onTick: { snapshot in
+                displayTeams = snapshot
+            },
+            finalResult: { model.pickTeams() },
+            onComplete: { result in
+                displayTeams = result
                 isAnimating = false
                 isDone = true
             }
-        }
+        )
     }
 }
 
