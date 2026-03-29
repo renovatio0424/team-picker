@@ -4,7 +4,7 @@ import SwiftUI
 struct TeamPickerApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
         }
     }
 }
