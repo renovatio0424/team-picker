@@ -56,7 +56,7 @@ struct StandupSessionView: View {
 
             RouletteWheelView(
                 participants: model.members,
-                highlightedName: displayOrder.first?.name ?? "",
+                highlightedName: pointedParticipantName,
                 progress: shuffleProgress,
                 pointerAngle: pointerAngle
             )
@@ -222,6 +222,29 @@ struct StandupSessionView: View {
 
     // MARK: - 헬퍼
 
+    /// 포인터 각도 기반으로 현재 가리키고 있는 참가자 이름 계산
+    private var pointedParticipantName: String {
+        let members = model.members
+        guard !members.isEmpty else { return "" }
+        let sliceDeg = 360.0 / Double(members.count)
+        let normalized = ((pointerAngle.truncatingRemainder(dividingBy: 360)) + 360)
+            .truncatingRemainder(dividingBy: 360)
+        for i in 0..<members.count {
+            let center = Double(i) * sliceDeg
+            let half = sliceDeg / 2
+            let low = ((center - half).truncatingRemainder(dividingBy: 360) + 360)
+                .truncatingRemainder(dividingBy: 360)
+            let high = ((center + half).truncatingRemainder(dividingBy: 360) + 360)
+                .truncatingRemainder(dividingBy: 360)
+            if low > high {
+                if normalized >= low || normalized < high { return members[i].name }
+            } else {
+                if normalized >= low && normalized < high { return members[i].name }
+            }
+        }
+        return members[0].name
+    }
+
     private var timerText: String {
         let minutes = Int(model.timerRemaining) / 60
         let seconds = Int(model.timerRemaining) % 60
@@ -234,7 +257,10 @@ struct StandupSessionView: View {
         shuffleProgress = 0
         pointerAngle = 0
 
-        let totalSpins = 360.0 * 4
+        // 회전 수(3~6바퀴)와 착지 각도를 랜덤화
+        let fullRotations = Double.random(in: 3...6)
+        let randomLanding = Double.random(in: 0..<360)
+        let totalSpins = 360.0 * fullRotations + randomLanding
 
         animationTask = animator.run(
             randomSnapshot: { model.randomOrderSnapshot() },
@@ -244,10 +270,31 @@ struct StandupSessionView: View {
             onProgress: { progress in
                 shuffleProgress = progress
                 let eased = 1 - pow(1 - progress, 3)
-                pointerAngle = totalSpins * eased
+                // 다음 틱까지의 예상 간격에 맞춰 부드러운 linear 보간
+                let interval = 0.05 + eased * 0.35
+                withAnimation(.linear(duration: interval)) {
+                    pointerAngle = totalSpins * eased
+                }
                 haptic.tick(intensity: progress)
             },
-            finalResult: { model.shuffleOrder() },
+            finalResult: {
+                // 포인터 착지 각도에서 시계방향으로 순서 결정
+                let members = model.members
+                guard !members.isEmpty else { return model.shuffleOrder() }
+                let sliceDeg = 360.0 / Double(members.count)
+                let finalAngle = ((totalSpins.truncatingRemainder(dividingBy: 360)) + 360)
+                    .truncatingRemainder(dividingBy: 360)
+                // 포인터가 가리키는 참가자 인덱스
+                let startIndex = Int(((finalAngle + sliceDeg / 2) / sliceDeg)
+                    .truncatingRemainder(dividingBy: Double(members.count)))
+                // startIndex부터 시계방향 순서
+                var order: [Participant] = []
+                for i in 0..<members.count {
+                    order.append(members[(startIndex + i) % members.count])
+                }
+                model.shuffledOrder = order
+                return order
+            },
             onComplete: { result in
                 displayOrder = result
                 haptic.selection()

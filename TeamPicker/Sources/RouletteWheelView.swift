@@ -108,7 +108,6 @@ struct RouletteWheelView: View {
                     .degrees(pointerAngle),
                     anchor: UnitPoint(x: 0.5, y: (center / size))
                 )
-                .animation(.easeOut(duration: 0.08), value: pointerAngle)
 
             // 중심 허브 (피벗)
             Circle()
