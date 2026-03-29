@@ -8,19 +8,25 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 PROJECT="$PROJECT_DIR/TeamPicker.xcodeproj"
 SCHEME="TeamPicker"
-DERIVED_DATA="/tmp/TeamPickerBuild"
+DERIVED_DATA=$(mktemp -d "${TMPDIR:-/tmp}/TeamPickerBuild.XXXXXX")
 BUNDLE_ID="com.reno.TeamPicker"
-DEVICE_NAME="${1:-iPhone 17 Pro}"
+export DEVICE_NAME="${1:-iPhone 17 Pro}"
+
+cleanup() {
+  rm -rf "$DERIVED_DATA"
+}
+trap cleanup EXIT
 
 # 1. 사용 가능한 시뮬레이터 찾기
 echo "🔍 시뮬레이터 검색: $DEVICE_NAME"
 DEVICE_ID=$(xcrun simctl list devices available -j \
   | python3 -c "
-import json, sys
+import json, sys, os
+device_name = os.environ['DEVICE_NAME']
 data = json.load(sys.stdin)
 for runtime, devices in data['devices'].items():
     for d in devices:
-        if d['name'] == '$DEVICE_NAME' and d['isAvailable']:
+        if d['name'] == device_name and d['isAvailable']:
             print(d['udid'])
             sys.exit(0)
 sys.exit(1)
@@ -33,12 +39,14 @@ sys.exit(1)
 echo "✅ 발견: $DEVICE_NAME ($DEVICE_ID)"
 
 # 2. 시뮬레이터 부팅
+export DEVICE_ID
 STATE=$(xcrun simctl list devices -j | python3 -c "
-import json, sys
+import json, sys, os
+device_id = os.environ['DEVICE_ID']
 data = json.load(sys.stdin)
 for runtime, devices in data['devices'].items():
     for d in devices:
-        if d['udid'] == '$DEVICE_ID':
+        if d['udid'] == device_id:
             print(d['state'])
             sys.exit(0)
 ")

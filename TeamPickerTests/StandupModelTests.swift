@@ -214,9 +214,5 @@ final class StandupModelTests: XCTestCase {
         let model2 = StandupModel()
         XCTAssertEqual(model2.members.count, 2)
         XCTAssertEqual(model2.members.map(\.name), ["Alice", "Bob"])
-
-        // 정리
-        model2.removeMember(at: IndexSet(integer: 0))
-        model2.removeMember(at: IndexSet(integer: 0))
     }
 }

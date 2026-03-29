@@ -31,6 +31,8 @@ final class ShuffleAnimator<T> {
                 onTick(randomSnapshot())
             }
 
+            guard !Task.isCancelled else { return }
+
             let result = finalResult()
             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                 onComplete(result)

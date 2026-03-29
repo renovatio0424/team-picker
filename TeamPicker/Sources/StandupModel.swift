@@ -72,18 +72,21 @@ class StandupModel: ObservableObject {
     }
 
     func beginPresenting() {
+        guard !shuffledOrder.isEmpty else { return }
         currentIndex = 0
         phase = .presenting
         startTimer()
     }
 
     func advanceToNext() {
+        guard phase == .presenting, !shuffledOrder.isEmpty else { return }
         timerTask?.cancel()
         isTimerRunning = false
 
         currentIndex += 1
         if currentIndex >= shuffledOrder.count {
             phase = .completed
+            timerRemaining = 0
         } else {
             startTimer()
         }
