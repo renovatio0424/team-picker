@@ -116,6 +116,7 @@ struct PickerView: View {
             },
             finalResult: { model.pickTeams() },
             onComplete: { result in
+                guard !Task.isCancelled else { return }
                 displayTeams = result
                 isAnimating = false
                 isDone = true
