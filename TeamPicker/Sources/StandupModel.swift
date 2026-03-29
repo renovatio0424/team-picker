@@ -3,6 +3,7 @@ import Foundation
 enum StandupPhase: Equatable {
     case idle       // 시작 전
     case shuffling  // 셔플 애니메이션 중
+    case ready      // 셔플 완료, 사용자 승인 대기
     case presenting // 타이머 진행 중 (한 명씩 발표)
     case completed  // 전원 발표 완료
 }

@@ -15,6 +15,8 @@ struct StandupSessionView: View {
                 switch model.phase {
                 case .idle, .shuffling:
                     shufflePhase
+                case .ready:
+                    readyPhase
                 case .presenting:
                     presenterPhase
                 case .completed:
@@ -65,6 +67,47 @@ struct StandupSessionView: View {
             }
 
             Spacer()
+        }
+    }
+
+    // MARK: - 순서 확정 단계
+
+    private var readyPhase: some View {
+        VStack(spacing: 16) {
+            Text("발표 순서가 정해졌습니다!")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .padding(.top, 24)
+
+            List {
+                ForEach(Array(displayOrder.enumerated()), id: \.element.id) { index, participant in
+                    HStack(spacing: 12) {
+                        Text("\(index + 1)")
+                            .font(.title2.monospacedDigit().bold())
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 32)
+                        Text(participant.name)
+                            .font(.title3)
+                    }
+                }
+            }
+            .listStyle(.insetGrouped)
+
+            Button {
+                withAnimation {
+                    model.beginPresenting()
+                }
+            } label: {
+                Label("스탠드업 시작", systemImage: "play.fill")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.accentColor)
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .padding(.horizontal)
+            .padding(.bottom)
         }
     }
 
@@ -193,7 +236,7 @@ struct StandupSessionView: View {
             finalResult: { model.shuffleOrder() },
             onComplete: { result in
                 displayOrder = result
-                model.beginPresenting()
+                model.phase = .ready
             }
         )
     }
