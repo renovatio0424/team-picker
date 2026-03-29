@@ -37,14 +37,17 @@ final class HapticManager {
 import UIKit
 
 private final class IOSHapticProvider: HapticFeedbackProvider {
+    private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+    private let notificationGenerator = UINotificationFeedbackGenerator()
+
     func lightImpact(intensity: Double) {
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.impactOccurred(intensity: CGFloat(intensity))
+        impactGenerator.prepare()
+        impactGenerator.impactOccurred(intensity: CGFloat(intensity))
     }
 
     func heavyImpact() {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
+        notificationGenerator.prepare()
+        notificationGenerator.notificationOccurred(.success)
     }
 }
 #endif
