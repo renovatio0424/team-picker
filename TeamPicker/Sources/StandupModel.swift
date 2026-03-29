@@ -66,6 +66,10 @@ class StandupModel: ObservableObject {
         members.shuffled()
     }
 
+    func beginShuffling() {
+        phase = .shuffling
+    }
+
     func beginPresenting() {
         currentIndex = 0
         phase = .presenting
@@ -91,6 +95,10 @@ class StandupModel: ObservableObject {
         currentIndex = 0
         shuffledOrder = []
         phase = .idle
+    }
+
+    deinit {
+        timerTask?.cancel()
     }
 
     // MARK: - 타이머

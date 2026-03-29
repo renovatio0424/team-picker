@@ -182,7 +182,7 @@ struct StandupSessionView: View {
     }
 
     private func startShuffle() {
-        model.phase = .shuffling
+        model.beginShuffling()
         displayOrder = model.randomOrderSnapshot()
 
         animationTask = animator.run(

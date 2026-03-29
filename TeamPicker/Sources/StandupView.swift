@@ -42,9 +42,9 @@ struct StandupView: View {
                 // 멤버 리스트
                 List {
                     Section {
-                        ForEach(model.members) { member in
+                        ForEach(Array(model.members.enumerated()), id: \.element.id) { index, member in
                             HStack {
-                                Text("\((model.members.firstIndex(of: member) ?? 0) + 1).")
+                                Text("\(index + 1).")
                                     .foregroundStyle(.secondary)
                                     .monospacedDigit()
                                 Text(member.name)
