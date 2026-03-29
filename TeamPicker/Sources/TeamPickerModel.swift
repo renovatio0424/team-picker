@@ -1,8 +1,13 @@
 import Foundation
 
-struct Participant: Identifiable, Equatable {
-    let id = UUID()
+struct Participant: Identifiable, Equatable, Codable {
+    let id: UUID
     let name: String
+
+    init(id: UUID = UUID(), name: String) {
+        self.id = id
+        self.name = name
+    }
 }
 
 class TeamPickerModel: ObservableObject {
