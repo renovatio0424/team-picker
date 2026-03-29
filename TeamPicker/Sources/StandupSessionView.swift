@@ -6,8 +6,11 @@ struct StandupSessionView: View {
 
     @State private var displayOrder: [Participant] = []
     @State private var animationTask: Task<Void, Never>?
+    @State private var shuffleProgress: Double = 0
+    @State private var pointerAngle: Double = 0
 
     private let animator = ShuffleAnimator<[Participant]>()
+    private let haptic = HapticManager()
 
     var body: some View {
         NavigationStack {
@@ -41,30 +44,26 @@ struct StandupSessionView: View {
         }
     }
 
-    // MARK: - 셔플 단계
+    // MARK: - 셔플 단계 (룰렛)
 
     private var shufflePhase: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             Spacer()
 
             Text("순서를 정하고 있어요...")
                 .font(.title2)
                 .foregroundStyle(.secondary)
 
-            VStack(spacing: 8) {
-                ForEach(Array(displayOrder.enumerated()), id: \.element.id) { index, participant in
-                    HStack {
-                        Text("\(index + 1).")
-                            .font(.title3.monospacedDigit())
-                            .foregroundStyle(.secondary)
-                            .frame(width: 30, alignment: .trailing)
-                        Text(participant.name)
-                            .font(.title3)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 40)
-                }
-            }
+            RouletteWheelView(
+                participants: model.members,
+                highlightedName: pointedParticipantName,
+                progress: shuffleProgress,
+                pointerAngle: pointerAngle
+            )
+
+            Text("\(Int(shuffleProgress * 100))%")
+                .font(.subheadline.monospacedDigit())
+                .foregroundStyle(.tertiary)
 
             Spacer()
         }
@@ -101,11 +100,10 @@ struct StandupSessionView: View {
                 Label("스탠드업 시작", systemImage: "play.fill")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .padding(.vertical, 4)
             }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
             .padding(.horizontal)
             .padding(.bottom)
         }
@@ -116,9 +114,13 @@ struct StandupSessionView: View {
     private var presenterPhase: some View {
         VStack(spacing: 24) {
             // 진행 표시 (몇 번째 / 전체)
-            Text("\(model.currentIndex + 1) / \(model.shuffledOrder.count)")
-                .font(.headline)
-                .foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                Image(systemName: "person.fill")
+                    .symbolEffect(.pulse, isActive: model.isTimerRunning)
+                Text("\(model.currentIndex + 1) / \(model.shuffledOrder.count)")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+            }
 
             Spacer()
 
@@ -152,6 +154,9 @@ struct StandupSessionView: View {
                     .contentTransition(.numericText())
             }
             .frame(width: 200, height: 200)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("타이머")
+            .accessibilityValue("\(Int(model.timerRemaining))초 남음")
 
             Spacer()
 
@@ -168,11 +173,11 @@ struct StandupSessionView: View {
                 )
                 .font(.headline)
                 .frame(maxWidth: .infinity)
-                .padding()
-                .background(!model.isTimerRunning ? Color.accentColor : Color.gray.opacity(0.3))
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .padding(.vertical, 4)
             }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(!model.isTimerRunning ? Color.accentColor : Color.gray)
             .disabled(model.isTimerRunning)
             .padding(.horizontal)
         }
@@ -206,17 +211,39 @@ struct StandupSessionView: View {
                 Label("돌아가기", systemImage: "arrow.uturn.backward")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .padding(.vertical, 4)
             }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
             .padding(.horizontal)
         }
         .padding(.bottom)
     }
 
     // MARK: - 헬퍼
+
+    /// 포인터 각도 기반으로 현재 가리키고 있는 참가자 이름 계산
+    private var pointedParticipantName: String {
+        let members = model.members
+        guard !members.isEmpty else { return "" }
+        let sliceDeg = 360.0 / Double(members.count)
+        let normalized = ((pointerAngle.truncatingRemainder(dividingBy: 360)) + 360)
+            .truncatingRemainder(dividingBy: 360)
+        for i in 0..<members.count {
+            let center = Double(i) * sliceDeg
+            let half = sliceDeg / 2
+            let low = ((center - half).truncatingRemainder(dividingBy: 360) + 360)
+                .truncatingRemainder(dividingBy: 360)
+            let high = ((center + half).truncatingRemainder(dividingBy: 360) + 360)
+                .truncatingRemainder(dividingBy: 360)
+            if low > high {
+                if normalized >= low || normalized < high { return members[i].name }
+            } else {
+                if normalized >= low && normalized < high { return members[i].name }
+            }
+        }
+        return members[0].name
+    }
 
     private var timerText: String {
         let minutes = Int(model.timerRemaining) / 60
@@ -227,15 +254,50 @@ struct StandupSessionView: View {
     private func startShuffle() {
         model.beginShuffling()
         displayOrder = model.randomOrderSnapshot()
+        shuffleProgress = 0
+        pointerAngle = 0
+
+        // 회전 수(3~6바퀴)와 착지 각도를 랜덤화
+        let fullRotations = Double.random(in: 3...6)
+        let randomLanding = Double.random(in: 0..<360)
+        let totalSpins = 360.0 * fullRotations + randomLanding
 
         animationTask = animator.run(
             randomSnapshot: { model.randomOrderSnapshot() },
             onTick: { snapshot in
                 displayOrder = snapshot
             },
-            finalResult: { model.shuffleOrder() },
+            onProgress: { progress in
+                shuffleProgress = progress
+                let eased = 1 - pow(1 - progress, 3)
+                // 다음 틱까지의 예상 간격에 맞춰 부드러운 linear 보간
+                let interval = 0.05 + eased * 0.35
+                withAnimation(.linear(duration: interval)) {
+                    pointerAngle = totalSpins * eased
+                }
+                haptic.tick(intensity: progress)
+            },
+            finalResult: {
+                // 포인터 착지 각도에서 시계방향으로 순서 결정
+                let members = model.members
+                guard !members.isEmpty else { return model.shuffleOrder() }
+                let sliceDeg = 360.0 / Double(members.count)
+                let finalAngle = ((totalSpins.truncatingRemainder(dividingBy: 360)) + 360)
+                    .truncatingRemainder(dividingBy: 360)
+                // 포인터가 가리키는 참가자 인덱스
+                let startIndex = Int(((finalAngle + sliceDeg / 2) / sliceDeg)
+                    .truncatingRemainder(dividingBy: Double(members.count)))
+                // startIndex부터 시계방향 순서
+                var order: [Participant] = []
+                for i in 0..<members.count {
+                    order.append(members[(startIndex + i) % members.count])
+                }
+                model.shuffledOrder = order
+                return order
+            },
             onComplete: { result in
                 displayOrder = result
+                haptic.selection()
                 model.phase = .ready
             }
         )
