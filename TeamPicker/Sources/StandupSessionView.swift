@@ -243,6 +243,6 @@ struct StandupSessionView: View {
 }
 
 #Preview {
-    let model = StandupModel()
+    @Previewable @StateObject var model = StandupModel()
     StandupSessionView(model: model, isPresented: .constant(true))
 }
