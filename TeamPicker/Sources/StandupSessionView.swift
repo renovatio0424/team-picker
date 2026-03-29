@@ -6,8 +6,11 @@ struct StandupSessionView: View {
 
     @State private var displayOrder: [Participant] = []
     @State private var animationTask: Task<Void, Never>?
+    @State private var shuffleProgress: Double = 0
+    @State private var pointerAngle: Double = 0
 
     private let animator = ShuffleAnimator<[Participant]>()
+    private let haptic = HapticManager()
 
     var body: some View {
         NavigationStack {
@@ -41,30 +44,26 @@ struct StandupSessionView: View {
         }
     }
 
-    // MARK: - 셔플 단계
+    // MARK: - 셔플 단계 (룰렛)
 
     private var shufflePhase: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             Spacer()
 
             Text("순서를 정하고 있어요...")
                 .font(.title2)
                 .foregroundStyle(.secondary)
 
-            VStack(spacing: 8) {
-                ForEach(Array(displayOrder.enumerated()), id: \.element.id) { index, participant in
-                    HStack {
-                        Text("\(index + 1).")
-                            .font(.title3.monospacedDigit())
-                            .foregroundStyle(.secondary)
-                            .frame(width: 30, alignment: .trailing)
-                        Text(participant.name)
-                            .font(.title3)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 40)
-                }
-            }
+            RouletteWheelView(
+                participants: model.members,
+                highlightedName: displayOrder.first?.name ?? "",
+                progress: shuffleProgress,
+                pointerAngle: pointerAngle
+            )
+
+            Text("\(Int(shuffleProgress * 100))%")
+                .font(.subheadline.monospacedDigit())
+                .foregroundStyle(.tertiary)
 
             Spacer()
         }
@@ -101,11 +100,10 @@ struct StandupSessionView: View {
                 Label("스탠드업 시작", systemImage: "play.fill")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .padding(.vertical, 4)
             }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
             .padding(.horizontal)
             .padding(.bottom)
         }
@@ -116,9 +114,13 @@ struct StandupSessionView: View {
     private var presenterPhase: some View {
         VStack(spacing: 24) {
             // 진행 표시 (몇 번째 / 전체)
-            Text("\(model.currentIndex + 1) / \(model.shuffledOrder.count)")
-                .font(.headline)
-                .foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                Image(systemName: "person.fill")
+                    .symbolEffect(.pulse, isActive: model.isTimerRunning)
+                Text("\(model.currentIndex + 1) / \(model.shuffledOrder.count)")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+            }
 
             Spacer()
 
@@ -152,6 +154,9 @@ struct StandupSessionView: View {
                     .contentTransition(.numericText())
             }
             .frame(width: 200, height: 200)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("타이머")
+            .accessibilityValue("\(Int(model.timerRemaining))초 남음")
 
             Spacer()
 
@@ -168,11 +173,11 @@ struct StandupSessionView: View {
                 )
                 .font(.headline)
                 .frame(maxWidth: .infinity)
-                .padding()
-                .background(!model.isTimerRunning ? Color.accentColor : Color.gray.opacity(0.3))
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .padding(.vertical, 4)
             }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(!model.isTimerRunning ? Color.accentColor : Color.gray)
             .disabled(model.isTimerRunning)
             .padding(.horizontal)
         }
@@ -206,11 +211,10 @@ struct StandupSessionView: View {
                 Label("돌아가기", systemImage: "arrow.uturn.backward")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .padding(.vertical, 4)
             }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
             .padding(.horizontal)
         }
         .padding(.bottom)
@@ -227,15 +231,26 @@ struct StandupSessionView: View {
     private func startShuffle() {
         model.beginShuffling()
         displayOrder = model.randomOrderSnapshot()
+        shuffleProgress = 0
+        pointerAngle = 0
+
+        let totalSpins = 360.0 * 4
 
         animationTask = animator.run(
             randomSnapshot: { model.randomOrderSnapshot() },
             onTick: { snapshot in
                 displayOrder = snapshot
             },
+            onProgress: { progress in
+                shuffleProgress = progress
+                let eased = 1 - pow(1 - progress, 3)
+                pointerAngle = totalSpins * eased
+                haptic.tick(intensity: progress)
+            },
             finalResult: { model.shuffleOrder() },
             onComplete: { result in
                 displayOrder = result
+                haptic.selection()
                 model.phase = .ready
             }
         )

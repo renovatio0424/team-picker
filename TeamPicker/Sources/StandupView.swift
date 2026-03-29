@@ -9,14 +9,16 @@ struct StandupView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 // 멤버 이름 입력
-                HStack {
+                HStack(spacing: 12) {
                     TextField("멤버 이름", text: $newName)
                         .textFieldStyle(.roundedBorder)
                         .onSubmit { addMember() }
+                        .submitLabel(.done)
 
                     Button(action: addMember) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
+                            .symbolEffect(.bounce, value: model.members.count)
                     }
                     .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
@@ -64,11 +66,10 @@ struct StandupView: View {
                     Label("스탠드업 시작", systemImage: "play.fill")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(model.canStart ? Color.accentColor : Color.gray)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .padding(.vertical, 4)
                 }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
                 .disabled(!model.canStart)
                 .padding()
             }
