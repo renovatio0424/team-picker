@@ -10,9 +10,20 @@
 		A2B0DC522F72D0E90043B628 /* TestPlan.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = A2B0DC512F72D0E90043B628 /* TestPlan.xctestplan */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		A3000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1000090 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1000050;
+			remoteInfo = TeamPicker;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		A1000001 /* TeamPicker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TeamPicker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2B0DC512F72D0E90043B628 /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
+		A3000010 /* TeamPickerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TeamPickerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -21,10 +32,22 @@
 			path = TeamPicker;
 			sourceTree = "<group>";
 		};
+		A3000020 /* TeamPickerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TeamPickerTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A1000020 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A3000030 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -39,6 +62,7 @@
 			children = (
 				A2B0DC512F72D0E90043B628 /* TestPlan.xctestplan */,
 				A1000010 /* TeamPicker */,
+				A3000020 /* TeamPickerTests */,
 				A1000040 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -47,6 +71,7 @@
 			isa = PBXGroup;
 			children = (
 				A1000001 /* TeamPicker.app */,
+				A3000010 /* TeamPickerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,6 +101,29 @@
 			productReference = A1000001 /* TeamPicker.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A3000040 /* TeamPickerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A3000050 /* Build configuration list for PBXNativeTarget "TeamPickerTests" */;
+			buildPhases = (
+				A3000060 /* Sources */,
+				A3000030 /* Frameworks */,
+				A3000070 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A3000002 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A3000020 /* TeamPickerTests */,
+			);
+			name = TeamPickerTests;
+			packageProductDependencies = (
+			);
+			productName = TeamPickerTests;
+			productReference = A3000010 /* TeamPickerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -85,6 +133,12 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					A3000040 = {
+						CreatedOnToolsVersion = 16.3;
+						TestTargetID = A1000050;
+					};
+				};
 			};
 			buildConfigurationList = A10000A0 /* Build configuration list for PBXProject "TeamPicker" */;
 			developmentRegion = en;
@@ -102,6 +156,7 @@
 			projectRoot = "";
 			targets = (
 				A1000050 /* TeamPicker */,
+				A3000040 /* TeamPickerTests */,
 			);
 		};
 /* End PBXProject section */
@@ -115,6 +170,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A3000070 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -125,7 +187,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A3000060 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A3000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1000050 /* TeamPicker */;
+			targetProxy = A3000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A10000B0 /* Debug */ = {
@@ -258,6 +335,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
@@ -277,7 +355,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.reno.TeamPicker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -289,6 +367,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
@@ -308,10 +387,50 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.reno.TeamPicker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A3000080 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reno.TeamPickerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TeamPicker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TeamPicker";
+			};
+			name = Debug;
+		};
+		A3000090 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reno.TeamPickerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TeamPicker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TeamPicker";
 			};
 			name = Release;
 		};
@@ -332,6 +451,15 @@
 			buildConfigurations = (
 				A10000B0 /* Debug */,
 				A10000C0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A3000050 /* Build configuration list for PBXNativeTarget "TeamPickerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A3000080 /* Debug */,
+				A3000090 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -12,7 +12,13 @@
     "testTimeoutsEnabled" : true
   },
   "testTargets" : [
-
+    {
+      "target" : {
+        "containerPath" : "container:TeamPicker.xcodeproj",
+        "identifier" : "A3000040",
+        "name" : "TeamPickerTests"
+      }
+    }
   ],
   "version" : 1
 }
